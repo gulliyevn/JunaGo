@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "FixDrive",
+    "slug": "fixdrive",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png"
+    }
+  }
+}
