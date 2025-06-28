@@ -1,12 +1,12 @@
 import { Driver, Client } from '../types/user';
-import { Location } from './MapService';
+import { MapLocation } from './MapService';
 
 export interface Order {
   id: string;
   client: Client;
   driver?: Driver;
-  from: Location;
-  to: Location;
+  from: MapLocation;
+  to: MapLocation;
   status: OrderStatus;
   price: number;
   createdAt: Date;
@@ -18,8 +18,8 @@ export type OrderStatus = 'pending' | 'accepted' | 'in_progress' | 'completed' |
 
 export interface CreateOrderPayload {
   clientId: string;
-  from: Location;
-  to: Location;
+  from: MapLocation;
+  to: MapLocation;
   scheduledFor?: Date;
 }
 

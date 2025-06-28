@@ -4,10 +4,10 @@
     "slug": "fixdrive",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -15,16 +15,32 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "FixDrive использует вашу локацию для поиска водителей поблизости",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "FixDrive использует вашу локацию для поиска водителей поблизости"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
-      "favicon": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png"
-    }
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "FixDrive использует вашу локацию для поиска водителей поблизости"
+        }
+      ]
+    ]
   }
 }
