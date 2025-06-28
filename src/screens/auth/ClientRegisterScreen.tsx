@@ -1,91 +1,318 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { useTheme } from '../../context/ThemeContext';
-import { lightColors, darkColors } from '../../constants/colors';
-import { useAuth } from '../../context/AuthContext';
-import InputField from '../../components/InputField';
-import Button from '../../components/Button';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TextInput, 
+  TouchableOpacity, 
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  SafeAreaView
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-const ClientRegisterScreen = ({ navigation }: any) => {
-  const { theme } = useTheme();
-  const colors = theme === 'dark' ? darkColors : lightColors;
-  const { register, loading } = useAuth();
-  const [form, setForm] = useState({
+const ClientRegisterScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const [formData, setFormData] = useState({
     name: '',
     surname: '',
     email: '',
-    address: '',
+    phone: '',
     password: '',
+    confirmPassword: ''
   });
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleChange = (key: string, value: string) => {
-    setForm({ ...form, [key]: value });
-  };
-
-  const handleRegister = async () => {
-    if (!form.name || !form.surname || !form.email || !form.address || !form.password) {
-      setError('Заполните все поля');
+  const handleRegister = () => {
+    const { name, surname, email, phone, password, confirmPassword } = formData;
+    
+    if (!name || !surname || !email || !phone || !password || !confirmPassword) {
+      Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
       return;
     }
-    setError('');
-    try {
-      await register({
-        ...form,
-        role: 'client',
-      });
-    } catch (e) {
-      setError('Ошибка регистрации');
+
+    if (password !== confirmPassword) {
+      Alert.alert('Ошибка', 'Пароли не совпадают');
+      return;
     }
+
+    if (password.length < 6) {
+      Alert.alert('Ошибка', 'Пароль должен содержать минимум 6 символов');
+      return;
+    }
+
+    Alert.alert('Успех', 'Регистрация завершена!', [
+      { text: 'OK', onPress: () => navigation.navigate('Login' as never) }
+    ]);
+  };
+
+  const handleQuickFill = () => {
+    setFormData({
+      name: 'Nicat',
+      surname: 'Quliyev',
+      email: 'client@fixdrive.com',
+      phone: '+994516995513',
+      password: 'password123',
+      confirmPassword: 'password123'
+    });
+  };
+
+  const updateFormData = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ padding: 24 }}>
-      <Text style={[styles.title, { color: colors.text }]}>Регистрация клиента</Text>
-      <InputField label="Имя" value={form.name} onChangeText={v => handleChange('name', v)} />
-      <InputField label="Фамилия" value={form.surname} onChangeText={v => handleChange('surname', v)} />
-      <InputField label="Email" value={form.email} onChangeText={v => handleChange('email', v)} keyboardType="email-address" autoCapitalize="none" />
-      <InputField label="Адрес проживания" value={form.address} onChangeText={v => handleChange('address', v)} />
-      <InputField label="Пароль" value={form.password} onChangeText={v => handleChange('password', v)} secureTextEntry />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button 
-        title={loading ? "Регистрация..." : "Зарегистрироваться"} 
-        onPress={handleRegister} 
-        disabled={loading}
-      />
-      {loading && <ActivityIndicator style={styles.loader} color={colors.primary} />}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.linkBtn}>
-        <Text style={[styles.link, { color: colors.primary }]}>Уже есть аккаунт? Войти</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#222" />
+            </TouchableOpacity>
+            <View style={styles.logoContainer}>
+              <Ionicons name="person-add" size={40} color="#27ae60" />
+            </View>
+            <Text style={styles.title}>Регистрация клиента</Text>
+            <Text style={styles.subtitle}>Создайте аккаунт для заказа поездок</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            <View style={styles.inputRow}>
+              <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
+                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Имя"
+                  value={formData.name}
+                  onChangeText={(value) => updateFormData('name', value)}
+                  placeholderTextColor="#999"
+                />
+              </View>
+              <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
+                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Фамилия"
+                  value={formData.surname}
+                  onChangeText={(value) => updateFormData('surname', value)}
+                  placeholderTextColor="#999"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={formData.email}
+                onChangeText={(value) => updateFormData('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Телефон"
+                value={formData.phone}
+                onChangeText={(value) => updateFormData('phone', value)}
+                keyboardType="phone-pad"
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Пароль"
+                value={formData.password}
+                onChangeText={(value) => updateFormData('password', value)}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity 
+                style={styles.eyeButton}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Подтвердите пароль"
+                value={formData.confirmPassword}
+                onChangeText={(value) => updateFormData('confirmPassword', value)}
+                secureTextEntry={!showConfirmPassword}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity 
+                style={styles.eyeButton}
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Ionicons 
+                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+              <Text style={styles.registerButtonText}>Создать аккаунт</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickFillButton} onPress={handleQuickFill}>
+              <Text style={styles.quickFillText}>Быстрое заполнение</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Уже есть аккаунт? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+              <Text style={styles.linkText}>Войти</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    padding: 8,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 24,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 8,
     textAlign: 'center',
   },
-  error: {
-    color: '#ef4444',
-    marginBottom: 12,
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
     textAlign: 'center',
   },
-  linkBtn: {
-    marginTop: 24,
+  form: {
+    flex: 1,
+    marginBottom: 20,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    height: 56,
   },
-  link: {
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: '500',
+    color: '#222',
   },
-  loader: {
+  eyeButton: {
+    padding: 4,
+  },
+  registerButton: {
+    backgroundColor: '#27ae60',
+    borderRadius: 12,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  registerButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginRight: 8,
+  },
+  quickFillButton: {
+    alignItems: 'center',
     marginTop: 16,
+  },
+  quickFillText: {
+    color: '#27ae60',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20,
+  },
+  footerText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  linkText: {
+    color: '#27ae60',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -1,4 +1,4 @@
-import { Driver, Client } from '../types/user';
+import { Driver, Client, UserRole } from '../types/user';
 import { MapLocation } from './MapService';
 
 export interface Order {
@@ -36,7 +36,7 @@ export class OrderService {
             surname: 'Клиент',
             email: 'test@example.com',
             address: 'Москва',
-            role: 'client',
+            role: UserRole.CLIENT,
           },
           from: payload.from,
           to: payload.to,
@@ -62,7 +62,7 @@ export class OrderService {
               surname: 'Клиент',
               email: 'test@example.com',
               address: 'Москва',
-              role: 'client',
+              role: UserRole.CLIENT,
             },
             driver: {
               id: '1',
@@ -70,7 +70,7 @@ export class OrderService {
               surname: 'Петров',
               email: 'alex@example.com',
               address: 'Москва',
-              role: 'driver',
+              role: UserRole.DRIVER,
               car: 'Toyota Camry',
               carInfo: 'A123BC, белый',
               clientsPerDay: 3,
@@ -106,9 +106,13 @@ export class OrderService {
               id: '1',
               name: 'Иван',
               surname: 'Сидоров',
-              email: 'ivan@example.com',
+              email: 'test@example.com',
               address: 'Москва',
-              role: 'client',
+              role: UserRole.CLIENT,
+              phone: '+7 (999) 123-45-67',
+              avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+              rating: 4.8,
+              createdAt: '2024-01-01',
             },
             driver: {
               id: driverId,
@@ -116,7 +120,7 @@ export class OrderService {
               surname: 'Петров',
               email: 'alex@example.com',
               address: 'Москва',
-              role: 'driver',
+              role: UserRole.DRIVER,
               car: 'Toyota Camry',
               carInfo: 'A123BC, белый',
               clientsPerDay: 3,
@@ -152,7 +156,7 @@ export class OrderService {
             surname: 'Клиент',
             email: 'test@example.com',
             address: 'Москва',
-            role: 'client',
+            role: UserRole.CLIENT,
           },
           driver: {
             id: driverId,
@@ -160,7 +164,7 @@ export class OrderService {
             surname: 'Петров',
             email: 'alex@example.com',
             address: 'Москва',
-            role: 'driver',
+            role: UserRole.DRIVER,
             car: 'Toyota Camry',
             carInfo: 'A123BC, белый',
             clientsPerDay: 3,
@@ -195,7 +199,7 @@ export class OrderService {
             surname: 'Клиент',
             email: 'test@example.com',
             address: 'Москва',
-            role: 'client',
+            role: UserRole.CLIENT,
           },
           driver: {
             id: '1',
@@ -203,7 +207,7 @@ export class OrderService {
             surname: 'Петров',
             email: 'alex@example.com',
             address: 'Москва',
-            role: 'driver',
+            role: UserRole.DRIVER,
             car: 'Toyota Camry',
             carInfo: 'A123BC, белый',
             clientsPerDay: 3,

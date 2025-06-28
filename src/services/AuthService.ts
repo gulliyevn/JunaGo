@@ -27,15 +27,19 @@ export class AuthService {
     // TODO: заменить на реальный запрос к API
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // Мок логин - всегда возвращает клиента
+        // Mock успешный логин
         if (payload.email && payload.password) {
           resolve({
             id: '1',
-            name: 'Тестовый',
-            surname: 'Клиент',
-            email: payload.email,
-            address: 'Москва',
-            role: 'client' as UserRole,
+            name: 'Иван',
+            surname: 'Иванов',
+            email: 'ivan@example.com',
+            address: 'Москва, ул. Примерная, 1',
+            role: UserRole.CLIENT,
+            phone: '+7 (999) 123-45-67',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+            rating: 4.8,
+            createdAt: '2024-01-01',
           } as Client);
         } else {
           reject(new Error('Неверные данные'));

@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { Driver } from '../types/user';
+import { Driver, UserRole } from '../types/user';
 
 export interface MapLocation {
   latitude: number;
@@ -71,7 +71,7 @@ export class MapService {
               surname: 'Петров',
               email: 'alex@example.com',
               address: 'Москва',
-              role: 'driver',
+              role: UserRole.DRIVER,
               car: 'Toyota Camry',
               carInfo: 'A123BC, белый',
               clientsPerDay: 3,
@@ -89,7 +89,7 @@ export class MapService {
               surname: 'Иванова',
               email: 'maria@example.com',
               address: 'Москва',
-              role: 'driver',
+              role: UserRole.DRIVER,
               car: 'Honda Civic',
               carInfo: 'B456DE, серебристый',
               clientsPerDay: 2,
@@ -107,7 +107,7 @@ export class MapService {
               surname: 'Сидоров',
               email: 'dmitry@example.com',
               address: 'Москва',
-              role: 'driver',
+              role: UserRole.DRIVER,
               car: 'BMW X5',
               carInfo: 'C789FG, черный',
               clientsPerDay: 4,

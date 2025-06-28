@@ -4,11 +4,8 @@
     "slug": "fixdrive",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
@@ -16,20 +13,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "FixDrive использует вашу локацию для поиска водителей поблизости",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "FixDrive использует вашу локацию для поиска водителей поблизости"
-      }
+      "bundleIdentifier": "com.fixdrive.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ]
+      "package": "com.fixdrive.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,9 +28,11 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "FixDrive использует вашу локацию для поиска водителей поблизости"
+          "locationAlwaysAndWhenInUsePermission": "Allow FixDrive to use your location to find nearby drivers and provide accurate pickup/dropoff locations."
         }
       ]
-    ]
+    ],
+    "entryPoint": "./app/App.tsx",
+    "jsEngine": "jsc"
   }
 }
