@@ -11,14 +11,17 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@types/react": "~19.0.10",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "prettier": "^3.6.2",
-    "@types/react": "~19.0.10"
+    "prettier": "^3.6.2"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@types/react-native": "^0.72.8"
+  }
 }
