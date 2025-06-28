@@ -5,59 +5,55 @@ import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
 const ICONS: Record<string, any> = {
-  'Карта': <Ionicons name="map" size={26} />, // blue
-  'Водители': <MaterialIcons name="directions-car" size={26} />, // purple
-  'Заказы': <MaterialIcons name="assignment" size={26} />, // orange
-  'Чат': <Ionicons name="chatbubble-ellipses" size={26} />, // green
-  'Профиль': <Ionicons name="person-circle" size={26} />, // gray
+  'Карта': <Ionicons name="map" size={26} />,
+  'Водители': <MaterialIcons name="directions-car" size={26} />,
+  'Заказы': <MaterialIcons name="assignment" size={26} />,
+  'Чат': <Ionicons name="chatbubble-ellipses" size={26} />,
+  'Профиль': <Ionicons name="person-circle" size={26} />,
   'Plus': <Ionicons name="add" size={36} />,
   'Earnings': <FontAwesome name="money" size={36} />,
 };
 
 const ACTIVE_COLORS: Record<string, string> = {
-  'Карта': '#007AFF',
-  'Водители': '#8e44ad',
+  'Карта': '#1E3A8A',
+  'Водители': '#1E3A8A',
   'Заказы': '#FF9500',
-  'Чат': '#34C759',
-  'Профиль': '#636e72',
+  'Чат': '#1E3A8A',
+  'Профиль': '#1E3A8A',
   'Plus': '#fff',
   'Earnings': '#fff',
 };
 
-const TabBar = ({ state, descriptors, navigation }: any) => {
+export default function TabBar({ state, descriptors, navigation }: any) {
   const { isDark } = useTheme();
+
   return (
-    <View style={[styles.tabBar, { backgroundColor: isDark ? '#181A20' : '#fff', borderTopColor: isDark ? '#333' : '#e0e0e0' }]}>  
+    <View style={[styles.tabBar, { backgroundColor: isDark ? '#111827' : '#FFFFFF' }]}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
-        const label = options.tabBarLabel ?? route.name;
+        const label = options.tabBarLabel || route.name;
         const isFocused = state.index === index;
-        const isCenter = label === '' || label === 'Plus' || label === 'Earnings';
-        const iconName = options.tabBarIcon || label;
-        const color = isFocused ? ACTIVE_COLORS[iconName] || '#007AFF' : '#b2bec3';
-
+        const isCenter = label === 'Plus';
+        const color = isFocused ? ACTIVE_COLORS[label] || '#1E3A8A' : '#6B7280';
+        
         if (isCenter) {
-          // Центральная кнопка (Plus/Earnings)
+          // Центральная кнопка "+" для быстрого бронирования
           return (
             <TouchableOpacity
               key={route.key}
               accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
-              onPress={() => navigation.navigate(route.name)}
+              onPress={() => navigation.navigate('Schedule')}
               style={styles.centerButtonWrap}
               activeOpacity={0.85}
             >
               <LinearGradient
-                colors={["#007AFF", "#34C759"]}
+                colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#1E3A8A', '#3B82F6']}
                 style={styles.centerButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                {iconName === 'Earnings' ? (
-                  <FontAwesome name="money" size={36} color="#fff" />
-                ) : (
-                  <Ionicons name="add" size={36} color="#fff" />
-                )}
+                <Ionicons name="add" size={36} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
           );
@@ -73,43 +69,52 @@ const TabBar = ({ state, descriptors, navigation }: any) => {
             style={styles.tab}
             activeOpacity={0.7}
           >
-            {iconName === 'Карта' && <Ionicons name="map" size={26} color={color} />}
-            {iconName === 'Водители' && <MaterialIcons name="directions-car" size={26} color={color} />}
-            {iconName === 'Заказы' && <MaterialIcons name="assignment" size={26} color={color} />}
-            {iconName === 'Чат' && <Ionicons name="chatbubble-ellipses" size={26} color={color} />}
-            {iconName === 'Профиль' && <Ionicons name="person-circle" size={26} color={color} />}
-            <Text style={[styles.label, { color: isFocused ? color : '#b2bec3' }]}>{label}</Text>
+            {ICONS[label] && React.cloneElement(ICONS[label], { color })}
+            <Text style={[
+              styles.label, 
+              { 
+                color, 
+                fontWeight: isFocused ? '600' : '400',
+                fontSize: isFocused ? 12 : 11,
+              }
+            ]}>
+              {label}
+            </Text>
           </TouchableOpacity>
         );
       })}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    height: Platform.OS === 'ios' ? 80 : 64,
-    borderTopWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 8,
+    height: 84,
+    paddingBottom: 20,
+    paddingTop: 8,
+    borderTopWidth: 0,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: 'center',
   },
   centerButtonWrap: {
     flex: 1,
@@ -123,11 +128,9 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#34C759',
+    shadowColor: '#1E3A8A',
     shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 12,
   },
 });
-
-export default TabBar;

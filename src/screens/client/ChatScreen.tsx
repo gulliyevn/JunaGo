@@ -8,277 +8,221 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  StatusBar,
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import AppCard from '../../components/AppCard';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { ClientStackParamList } from '../../types/navigation';
 
 interface Message {
   id: string;
   text: string;
-  isFromUser: boolean;
+  sender: 'client' | 'driver';
   timestamp: string;
-  sender: string;
+  isRead: boolean;
 }
 
-interface Chat {
-  id: string;
-  driverName: string;
-  driverAvatar: string;
-  lastMessage: string;
-  timestamp: string;
-  unreadCount: number;
-  isOnline: boolean;
-}
+type ChatScreenRouteProp = RouteProp<ClientStackParamList, 'ChatConversation'>;
 
 const ChatScreen: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-  const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const chats: Chat[] = [
-    {
-      id: '1',
-      driverName: 'Александр Петров',
-      driverAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-      lastMessage: 'Приеду через 5 минут',
-      timestamp: '14:30',
-      unreadCount: 2,
-      isOnline: true
-    },
-    {
-      id: '2',
-      driverName: 'Иван Сидоров',
-      driverAvatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-      lastMessage: 'Спасибо за поездку!',
-      timestamp: '12:15',
-      unreadCount: 0,
-      isOnline: false
-    },
-    {
-      id: '3',
-      driverName: 'Петр Козлов',
-      driverAvatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-      lastMessage: 'Где вас забрать?',
-      timestamp: '10:45',
-      unreadCount: 1,
-      isOnline: true
-    }
-  ];
-
-  const mockMessages: Message[] = [
-    {
-      id: '1',
-      text: 'Здравствуйте! Я ваш водитель',
-      isFromUser: false,
-      timestamp: '14:25',
-      sender: 'Александр Петров'
-    },
-    {
-      id: '2',
-      text: 'Привет! Я уже на месте',
-      isFromUser: true,
-      timestamp: '14:26',
-      sender: 'Вы'
-    },
-    {
-      id: '3',
-      text: 'Приеду через 5 минут',
-      isFromUser: false,
-      timestamp: '14:30',
-      sender: 'Александр Петров'
-    }
-  ];
-
-  const handleChatSelect = (chat: Chat) => {
-    setSelectedChat(chat);
-    setMessages(mockMessages);
+  const { isDark } = useTheme();
+  const route = useRoute<ChatScreenRouteProp>();
+  const navigation = useNavigation();
+  
+  // Получаем данные водителя из параметров навигации
+  const driverData = route.params || {
+    driverId: 'default',
+    driverName: 'Александр Петров',
+    driverCar: 'Toyota Camry',
+    driverNumber: 'А123БВ777',
+    driverRating: '4.8',
+    driverStatus: 'online'
   };
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: 'Добрый день! Я буду вашим водителем сегодня.',
+      sender: 'driver',
+      timestamp: '14:30',
+      isRead: true,
+    },
+    {
+      id: '2',
+      text: 'Здравствуйте! Спасибо, буду ждать у подъезда.',
+      sender: 'client',
+      timestamp: '14:31',
+      isRead: true,
+    },
+    {
+      id: '3',
+      text: 'Приеду через 5 минут. Буду на белой Toyota Camry.',
+      sender: 'driver',
+      timestamp: '14:32',
+      isRead: true,
+    },
+    {
+      id: '4',
+      text: 'Отлично, буду ждать!',
+      sender: 'client',
+      timestamp: '14:33',
+      isRead: false,
+    },
+  ]);
 
   const handleSendMessage = () => {
-    if (!messageText.trim()) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: messageText,
-      isFromUser: true,
-      timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-      sender: 'Вы'
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessageText('');
-
-    // Mock response
-    setTimeout(() => {
-      const response: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Понял, скоро буду!',
-        isFromUser: false,
-        timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-        sender: selectedChat?.driverName || 'Водитель'
+    if (message.trim()) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        text: message.trim(),
+        sender: 'client',
+        timestamp: new Date().toLocaleTimeString('ru-RU', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        isRead: false,
       };
-      setMessages(prev => [...prev, response]);
-    }, 1000);
+      setMessages([...messages, newMessage]);
+      setMessage('');
+    }
   };
 
-  const handleBackToChats = () => {
-    setSelectedChat(null);
-    setMessages([]);
+  const handleCallDriver = () => {
+    Alert.alert(
+      'Звонок водителю',
+      `Позвонить водителю ${driverData.driverName}?`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        { 
+          text: 'Позвонить', 
+          onPress: () => {
+            Alert.alert(
+              'Звонок',
+              `Выполняется звонок водителю ${driverData.driverName}...`,
+              [{ text: 'OK' }]
+            );
+          }
+        }
+      ]
+    );
   };
 
-  if (selectedChat) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          {/* Chat Header */}
-          <View style={styles.chatHeader}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBackToChats}>
-              <Ionicons name="arrow-back" size={24} color="#222" />
-            </TouchableOpacity>
-            <View style={styles.chatInfo}>
-              <View style={styles.chatAvatar}>
-                <Ionicons name="person" size={24} color="#fff" />
+  const formatTime = (timestamp: string) => {
+    return timestamp;
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      
+      {/* Header */}
+      <AppCard style={styles.header} margin={16}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#1E3A8A" />
+          </TouchableOpacity>
+          <View style={styles.driverInfo}>
+            <View style={styles.driverAvatar}>
+              <Text style={{ fontSize: 20 }}>👨‍💼</Text>
+            </View>
+            <View style={styles.driverDetails}>
+              <Text style={styles.driverName}>{driverData.driverName}</Text>
+              <Text style={styles.carInfo}>{driverData.driverCar} • {driverData.driverNumber}</Text>
+              <View style={styles.statusContainer}>
+                <View style={[styles.statusDot, { backgroundColor: driverData.driverStatus === 'online' ? '#10B981' : '#6B7280' }]} />
+                <Text style={styles.statusText}>{driverData.driverStatus === 'online' ? 'В сети' : 'Не в сети'}</Text>
               </View>
-              <View style={styles.chatDetails}>
-                <Text style={styles.chatName}>{selectedChat.driverName}</Text>
-                <View style={styles.chatStatus}>
-                  <View style={[
-                    styles.statusIndicator,
-                    { backgroundColor: selectedChat.isOnline ? '#27ae60' : '#ccc' }
-                  ]} />
-                  <Text style={styles.statusText}>
-                    {selectedChat.isOnline ? 'Онлайн' : 'Офлайн'}
+            </View>
+          </View>
+          <TouchableOpacity style={styles.callButton} onPress={handleCallDriver}>
+            <Ionicons name="call" size={24} color="#1E3A8A" />
+          </TouchableOpacity>
+        </View>
+      </AppCard>
+
+      {/* Messages */}
+      <KeyboardAvoidingView 
+        style={styles.messagesContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView 
+          style={styles.messagesList}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.messagesContent}
+        >
+          {messages.map((msg) => (
+            <View 
+              key={msg.id} 
+              style={[
+                styles.messageContainer,
+                msg.sender === 'client' ? styles.clientMessage : styles.driverMessage
+              ]}
+            >
+              <View style={[
+                styles.messageBubble,
+                msg.sender === 'client' 
+                  ? { backgroundColor: '#1E3A8A' } 
+                  : { backgroundColor: isDark ? '#374151' : '#F3F4F6' }
+              ]}>
+                <Text style={[
+                  styles.messageText,
+                  { color: msg.sender === 'client' ? '#FFFFFF' : (isDark ? '#F9FAFB' : '#1F2937') }
+                ]}>
+                  {msg.text}
+                </Text>
+                <View style={styles.messageFooter}>
+                  <Text style={[
+                    styles.messageTime,
+                    { color: msg.sender === 'client' ? '#E5E7EB' : '#6B7280' }
+                  ]}>
+                    {formatTime(msg.timestamp)}
                   </Text>
+                  {msg.sender === 'client' && (
+                    <Ionicons 
+                      name={msg.isRead ? "checkmark-done" : "checkmark"} 
+                      size={14} 
+                      color={msg.isRead ? "#10B981" : "#E5E7EB"} 
+                    />
+                  )}
                 </View>
               </View>
             </View>
-            <TouchableOpacity style={styles.callButton}>
-              <Ionicons name="call" size={24} color="#27ae60" />
-            </TouchableOpacity>
-          </View>
+          ))}
+        </ScrollView>
 
-          {/* Messages */}
-          <ScrollView style={styles.messagesContainer} showsVerticalScrollIndicator={false}>
-            {messages.map((message) => (
-              <View
-                key={message.id}
-                style={[
-                  styles.messageContainer,
-                  message.isFromUser ? styles.userMessage : styles.driverMessage
-                ]}
-              >
-                <View style={[
-                  styles.messageBubble,
-                  message.isFromUser ? styles.userBubble : styles.driverBubble
-                ]}>
-                  <Text style={[
-                    styles.messageText,
-                    message.isFromUser ? styles.userMessageText : styles.driverMessageText
-                  ]}>
-                    {message.text}
-                  </Text>
-                  <Text style={[
-                    styles.messageTime,
-                    message.isFromUser ? styles.userMessageTime : styles.driverMessageTime
-                  ]}>
-                    {message.timestamp}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-
-          {/* Message Input */}
-          <View style={styles.inputContainer}>
+        {/* Message Input */}
+        <AppCard style={styles.inputContainer} margin={16}>
+          <View style={styles.inputRow}>
             <TextInput
               style={styles.messageInput}
               placeholder="Введите сообщение..."
-              value={messageText}
-              onChangeText={setMessageText}
+              value={message}
+              onChangeText={setMessage}
+              placeholderTextColor="#6B7280"
               multiline
-              placeholderTextColor="#999"
             />
             <TouchableOpacity 
               style={[
                 styles.sendButton,
-                !messageText.trim() && styles.sendButtonDisabled
+                { backgroundColor: message.trim() ? '#1E3A8A' : '#E5E7EB' }
               ]}
               onPress={handleSendMessage}
-              disabled={!messageText.trim()}
+              disabled={!message.trim()}
             >
               <Ionicons 
                 name="send" 
                 size={20} 
-                color={messageText.trim() ? '#fff' : '#ccc'} 
+                color={message.trim() ? '#FFFFFF' : '#6B7280'} 
               />
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Чаты</Text>
-        <TouchableOpacity style={styles.newChatButton}>
-          <Ionicons name="add" size={24} color="#27ae60" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInput}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Поиск чатов..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
-          />
-        </View>
-      </View>
-
-      {/* Chats List */}
-      <ScrollView style={styles.chatsList} showsVerticalScrollIndicator={false}>
-        {chats.map((chat) => (
-          <TouchableOpacity
-            key={chat.id}
-            style={styles.chatCard}
-            onPress={() => handleChatSelect(chat)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.chatAvatar}>
-              <Ionicons name="person" size={24} color="#fff" />
-              {chat.isOnline && <View style={styles.onlineIndicator} />}
-            </View>
-            <View style={styles.chatContent}>
-              <View style={styles.chatHeader}>
-                <Text style={styles.chatName}>{chat.driverName}</Text>
-                <Text style={styles.chatTime}>{chat.timestamp}</Text>
-              </View>
-              <View style={styles.chatFooter}>
-                <Text style={styles.lastMessage} numberOfLines={1}>
-                  {chat.lastMessage}
-                </Text>
-                {chat.unreadCount > 0 && (
-                  <View style={styles.unreadBadge}>
-                    <Text style={styles.unreadCount}>{chat.unreadCount}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </AppCard>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -286,145 +230,53 @@ const ChatScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  keyboardView: {
-    flex: 1,
   },
   header: {
+    marginBottom: 8,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  newChatButton: {
-    padding: 4,
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-  },
-  searchInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 48,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#222',
-  },
-  chatsList: {
-    flex: 1,
-  },
-  chatCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  chatAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#27ae60',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-    position: 'relative',
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#27ae60',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  chatContent: {
-    flex: 1,
-  },
-  chatHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  chatName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
-  },
-  chatTime: {
-    fontSize: 12,
-    color: '#666',
-  },
-  chatFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  lastMessage: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-  },
-  unreadBadge: {
-    backgroundColor: '#27ae60',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
-  },
-  unreadCount: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
+    paddingVertical: 8,
   },
   backButton: {
-    marginRight: 16,
-    padding: 4,
+    padding: 8,
+    marginRight: 8,
   },
-  chatInfo: {
+  driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  chatDetails: {
-    marginLeft: 12,
-  },
-  chatStatus: {
-    flexDirection: 'row',
+  driverAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  driverDetails: {
+    flex: 1,
+  },
+  driverName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  carInfo: {
+    fontSize: 14,
+    color: '#6B7280',
     marginTop: 2,
   },
-  statusIndicator: {
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -432,20 +284,25 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#666',
+    color: '#6B7280',
   },
   callButton: {
-    padding: 4,
+    padding: 8,
   },
   messagesContainer: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+  },
+  messagesList: {
+    flex: 1,
+  },
+  messagesContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   messageContainer: {
-    marginBottom: 16,
+    marginVertical: 4,
   },
-  userMessage: {
+  clientMessage: {
     alignItems: 'flex-end',
   },
   driverMessage: {
@@ -453,69 +310,60 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '80%',
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 20,
-  },
-  userBubble: {
-    backgroundColor: '#27ae60',
-    borderBottomRightRadius: 4,
-  },
-  driverBubble: {
-    backgroundColor: '#f0f0f0',
-    borderBottomLeftRadius: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   messageText: {
     fontSize: 16,
     lineHeight: 20,
   },
-  userMessageText: {
-    color: '#fff',
-  },
-  driverMessageText: {
-    color: '#222',
+  messageFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 4,
+    gap: 4,
   },
   messageTime: {
     fontSize: 12,
-    marginTop: 4,
-  },
-  userMessageTime: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'right',
-  },
-  driverMessageTime: {
-    color: '#666',
   },
   inputContainer: {
+    marginBottom: 20,
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    gap: 8,
   },
   messageInput: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F3F4F6',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    maxHeight: 100,
     fontSize: 16,
-    color: '#222',
-    marginRight: 12,
+    color: '#1F2937',
+    maxHeight: 100,
+    minHeight: 44,
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#27ae60',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#f0f0f0',
   },
 });
 

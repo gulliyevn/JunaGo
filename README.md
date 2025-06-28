@@ -42,3 +42,4 @@
 npm install
 npx expo start
 ```
+cd /Users/gulliyevn/FixDrive/fixdrive && npx expo start 

@@ -8,10 +8,10 @@ export const MAP_CONFIG = {
     hybrid: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_API_KEY}`,
     dark: `https://api.maptiler.com/maps/streets-dark/style.json?key=${MAPTILER_API_KEY}`,
   },
-  // Настройки по умолчанию
+  // Настройки по умолчанию (Баку)
   defaultRegion: {
-    latitude: 55.7558,
-    longitude: 37.6176,
+    latitude: 40.4093,
+    longitude: 49.8671,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   },

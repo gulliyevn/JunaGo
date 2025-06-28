@@ -47,29 +47,25 @@ const PlusScreen: React.FC = () => {
       title: 'Премиум',
       subtitle: 'Комфортные автомобили',
       icon: 'diamond',
-      color: '#FFD700',
-      price: 'от 800 ₽'
+      color: '#FFD700'
     },
     {
       title: 'Эконом',
       subtitle: 'Бюджетные поездки',
       icon: 'car',
-      color: '#27ae60',
-      price: 'от 300 ₽'
+      color: '#27ae60'
     },
     {
       title: 'Грузовой',
       subtitle: 'Перевозка грузов',
       icon: 'truck',
-      color: '#FF6B35',
-      price: 'от 1200 ₽'
+      color: '#FF6B35'
     },
     {
       title: 'Междугородний',
       subtitle: 'Поездки между городами',
       icon: 'airplane',
-      color: '#3498db',
-      price: 'от 2000 ₽'
+      color: '#3498db'
     }
   ];
 
@@ -85,7 +81,7 @@ const PlusScreen: React.FC = () => {
   };
 
   const handleServiceSelect = (service: any) => {
-    Alert.alert(service.title, `${service.subtitle}\n${service.price}`);
+    Alert.alert(service.title, service.subtitle);
   };
 
   const handleDestinationSelect = (destination: any) => {
@@ -145,7 +141,7 @@ const PlusScreen: React.FC = () => {
                       <Text style={styles.serviceSubtitle}>{service.subtitle}</Text>
                     </View>
                   </View>
-                  <Text style={styles.servicePrice}>{service.price}</Text>
+
                 </View>
               </TouchableOpacity>
             ))}
@@ -332,11 +328,7 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-  servicePrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#27ae60',
-  },
+
   destinationsList: {
     gap: 12,
   },

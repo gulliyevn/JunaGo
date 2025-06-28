@@ -62,7 +62,7 @@ const RoleSelectScreen: React.FC = () => {
                 <Text style={styles.featureText}>Удобная оплата</Text>
               </View>
             </View>
-            <View style={styles.cardButton}>
+            <View style={[styles.cardButton, styles.clientButton]}>
               <Text style={styles.cardButtonText}>Выбрать</Text>
               <Ionicons name="arrow-forward" size={16} color="#fff" />
             </View>
@@ -75,7 +75,7 @@ const RoleSelectScreen: React.FC = () => {
             activeOpacity={0.8}
           >
             <View style={styles.cardIconContainer}>
-              <MaterialIcons name="directions-car" size={40} color="#007AFF" />
+              <MaterialIcons name="directions-car" size={40} color="#1E3A8A" />
             </View>
             <Text style={styles.cardTitle}>Водитель</Text>
             <Text style={styles.cardDescription}>
@@ -83,19 +83,19 @@ const RoleSelectScreen: React.FC = () => {
             </Text>
             <View style={styles.cardFeatures}>
               <View style={styles.feature}>
-                <Ionicons name="checkmark-circle" size={16} color="#007AFF" />
+                <Ionicons name="checkmark-circle" size={16} color="#1E3A8A" />
                 <Text style={styles.featureText}>Гибкий график работы</Text>
               </View>
               <View style={styles.feature}>
-                <Ionicons name="checkmark-circle" size={16} color="#007AFF" />
+                <Ionicons name="checkmark-circle" size={16} color="#1E3A8A" />
                 <Text style={styles.featureText}>Высокий доход</Text>
               </View>
               <View style={styles.feature}>
-                <Ionicons name="checkmark-circle" size={16} color="#007AFF" />
+                <Ionicons name="checkmark-circle" size={16} color="#1E3A8A" />
                 <Text style={styles.featureText}>Поддержка 24/7</Text>
               </View>
             </View>
-            <View style={styles.cardButton}>
+            <View style={[styles.cardButton, styles.driverButton]}>
               <Text style={styles.cardButtonText}>Выбрать</Text>
               <Ionicons name="arrow-forward" size={16} color="#fff" />
             </View>
@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   cardButton: {
-    backgroundColor: '#27ae60',
     borderRadius: 12,
     paddingVertical: 16,
     flexDirection: 'row',
@@ -232,9 +231,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   linkText: {
-    color: '#27ae60',
+    color: '#1E3A8A',
     fontSize: 16,
     fontWeight: '600',
+  },
+  clientButton: {
+    backgroundColor: '#10B981',
+  },
+  driverButton: {
+    backgroundColor: '#1E3A8A',
   },
 });
 

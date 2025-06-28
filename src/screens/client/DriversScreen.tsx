@@ -7,9 +7,13 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
-  TextInput
+  TextInput,
+  StatusBar
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AppCard from '../../components/AppCard';
+import RatingStars from '../../components/RatingStars';
 
 interface Driver {
   id: string;
@@ -21,10 +25,12 @@ interface Driver {
   isOnline: boolean;
   distance: string;
   estimatedTime: string;
-  price: string;
+  isAvailable: boolean;
+  photo?: string;
 }
 
 const DriversScreen: React.FC = () => {
+  const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
@@ -32,127 +38,149 @@ const DriversScreen: React.FC = () => {
     {
       id: '1',
       name: 'Александр Петров',
-      rating: 4.8,
-      totalRides: 127,
+      rating: 4.9,
+      totalRides: 1247,
       carModel: 'Toyota Camry',
-      carNumber: 'А123БВ77',
+      carNumber: 'А123БВ777',
       isOnline: true,
-      distance: '0.5 км',
+      isAvailable: true,
+      distance: '0.8 км',
       estimatedTime: '3 мин',
-      price: 'от 500 ₽'
+      photo: 'https://via.placeholder.com/60',
     },
     {
       id: '2',
-      name: 'Иван Сидоров',
-      rating: 4.6,
-      totalRides: 89,
-      carModel: 'Honda Civic',
-      carNumber: 'В456ГД77',
+      name: 'Михаил Иванов',
+      rating: 4.8,
+      totalRides: 892,
+      carModel: 'Honda Accord',
+      carNumber: 'В456ГД888',
       isOnline: true,
+      isAvailable: true,
       distance: '1.2 км',
       estimatedTime: '5 мин',
-      price: 'от 450 ₽'
+      photo: 'https://via.placeholder.com/60',
     },
     {
       id: '3',
-      name: 'Петр Козлов',
-      rating: 4.9,
-      totalRides: 203,
-      carModel: 'BMW X5',
-      carNumber: 'Е789ЖЗ77',
+      name: 'Дмитрий Сидоров',
+      rating: 4.7,
+      totalRides: 1563,
+      carModel: 'BMW 3 Series',
+      carNumber: 'Е789ЖЗ999',
       isOnline: false,
+      isAvailable: false,
       distance: '2.1 км',
       estimatedTime: '8 мин',
-      price: 'от 800 ₽'
+      photo: 'https://via.placeholder.com/60',
     },
     {
       id: '4',
-      name: 'Михаил Иванов',
-      rating: 4.7,
-      totalRides: 156,
+      name: 'Сергей Козлов',
+      rating: 4.9,
+      totalRides: 2034,
       carModel: 'Mercedes C-Class',
-      carNumber: 'И012КЛ77',
+      carNumber: 'И012КЛ777',
       isOnline: true,
-      distance: '0.8 км',
-      estimatedTime: '4 мин',
-      price: 'от 600 ₽'
-    }
-  ];
-
-  const filters = [
-    { key: 'all', label: 'Все', icon: 'list' },
-    { key: 'online', label: 'Онлайн', icon: 'radio-button-on' },
-    { key: 'rating', label: 'Рейтинг', icon: 'star' },
-    { key: 'distance', label: 'Близко', icon: 'location' }
+      isAvailable: true,
+      distance: '0.5 км',
+      estimatedTime: '2 мин',
+      photo: 'https://via.placeholder.com/60',
+    },
   ];
 
   const handleDriverSelect = (driver: Driver) => {
     Alert.alert(
       'Выбор водителя',
-      `Заказать поездку у ${driver.name}?\n${driver.carModel} (${driver.carNumber})\nРейтинг: ${driver.rating}⭐\nЦена: ${driver.price}`,
+      `Выбрать ${driver.name}?\n${driver.carModel} • ${driver.carNumber}\nРейтинг: ${driver.rating} ⭐`,
       [
         { text: 'Отмена', style: 'cancel' },
-        { text: 'Заказать', onPress: () => Alert.alert('Успех', 'Заказ создан! Водитель скоро приедет.') }
+        { text: 'Выбрать', onPress: () => Alert.alert('Успешно', 'Водитель выбран!') }
       ]
     );
   };
 
-  const handleFilterSelect = (filter: string) => {
-    setSelectedFilter(filter);
-    Alert.alert('Фильтр', `Применен фильтр: ${filter}`);
+  const handleBookDriver = (driver: Driver) => {
+    Alert.alert(
+      'Бронирование',
+      `Забронировать ${driver.name} на завтра?\n${driver.carModel} • ${driver.carNumber}`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        { text: 'Забронировать', onPress: () => Alert.alert('Успешно', 'Водитель забронирован!') }
+      ]
+    );
   };
+
+  const filters = [
+    { id: 'all', label: 'Все', icon: 'car' },
+    { id: 'online', label: 'Онлайн', icon: 'radio-button-on' },
+    { id: 'nearby', label: 'Близко', icon: 'location' },
+    { id: 'top', label: 'Топ', icon: 'star' },
+    { id: 'available', label: 'Свободны', icon: 'checkmark-circle' },
+  ];
 
   const filteredDrivers = drivers.filter(driver => {
     if (selectedFilter === 'online') return driver.isOnline;
-    if (selectedFilter === 'rating') return driver.rating >= 4.7;
-    if (selectedFilter === 'distance') return parseFloat(driver.distance) <= 1.0;
+    if (selectedFilter === 'nearby') return parseFloat(driver.distance) <= 1.0;
+    if (selectedFilter === 'top') return driver.rating >= 4.8;
+    if (selectedFilter === 'available') return driver.isAvailable;
     return true;
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Доступные водители</Text>
-        <TouchableOpacity style={styles.refreshButton}>
-          <Ionicons name="refresh" size={24} color="#27ae60" />
+        <Text style={[styles.headerTitle, { color: isDark ? '#F9FAFB' : '#1F2937' }]}>
+          Доступные водители
+        </Text>
+        <TouchableOpacity style={styles.filterButton}>
+          <Ionicons name="options-outline" size={24} color="#1E3A8A" />
         </TouchableOpacity>
       </View>
 
-      {/* Search */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInput}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+      {/* Search Bar */}
+      <View style={styles.searchBarWrapper}>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
           <TextInput
-            style={styles.input}
+            style={styles.searchInput}
             placeholder="Поиск водителей..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
+            placeholderTextColor="#6B7280"
+            underlineColorAndroid="transparent"
+            returnKeyType="search"
           />
         </View>
       </View>
 
       {/* Filters */}
       <View style={styles.filtersContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersContent}
+        >
           {filters.map((filter) => (
             <TouchableOpacity
-              key={filter.key}
+              key={filter.id}
               style={[
-                styles.filterButton,
-                selectedFilter === filter.key && styles.filterButtonActive
+                styles.filterChip,
+                selectedFilter === filter.id && styles.filterChipActive
               ]}
-              onPress={() => handleFilterSelect(filter.key)}
+              onPress={() => setSelectedFilter(filter.id)}
             >
               <Ionicons 
                 name={filter.icon as any} 
-                size={16} 
-                color={selectedFilter === filter.key ? '#fff' : '#666'} 
+                size={14} 
+                color={selectedFilter === filter.id ? '#FFFFFF' : '#1E3A8A'} 
               />
               <Text style={[
                 styles.filterText,
-                selectedFilter === filter.key && styles.filterTextActive
+                { color: selectedFilter === filter.id ? '#FFFFFF' : '#1E3A8A' }
               ]}>
                 {filter.label}
               </Text>
@@ -164,71 +192,80 @@ const DriversScreen: React.FC = () => {
       {/* Drivers List */}
       <ScrollView style={styles.driversList} showsVerticalScrollIndicator={false}>
         {filteredDrivers.map((driver) => (
-          <TouchableOpacity
-            key={driver.id}
-            style={styles.driverCard}
-            onPress={() => handleDriverSelect(driver)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.driverHeader}>
-              <View style={styles.driverInfo}>
-                <View style={styles.driverAvatar}>
-                  <Ionicons name="person" size={24} color="#fff" />
-                </View>
-                <View style={styles.driverDetails}>
-                  <Text style={styles.driverName}>{driver.name}</Text>
-                  <View style={styles.ratingContainer}>
-                    <Ionicons name="star" size={14} color="#FFD700" />
-                    <Text style={styles.ratingText}>{driver.rating}</Text>
-                    <Text style={styles.ridesText}>({driver.totalRides} поездок)</Text>
+          <AppCard key={driver.id} style={styles.driverCard} margin={8}>
+            <View style={styles.driverContent}>
+              <View style={styles.driverHeader}>
+                <View style={styles.driverInfo}>
+                  <View style={styles.driverAvatar}>
+                    {driver.photo ? (
+                      <Ionicons name="person" size={24} color="#1E3A8A" />
+                    ) : (
+                      <Ionicons name="person" size={24} color="#1E3A8A" />
+                    )}
+                  </View>
+                  <View style={styles.driverDetails}>
+                    <Text style={styles.driverName}>{driver.name}</Text>
+                    <Text style={styles.carInfo}>
+                      {driver.carModel} • {driver.carNumber}
+                    </Text>
                   </View>
                 </View>
+                <View style={styles.driverStatus}>
+                  <View style={[
+                    styles.statusDot,
+                    { backgroundColor: driver.isOnline ? '#10B981' : '#6B7280' }
+                  ]} />
+                  <Text style={styles.statusText}>
+                    {driver.isOnline ? 'Онлайн' : 'Офлайн'}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.statusContainer}>
-                <View style={[
-                  styles.statusIndicator,
-                  { backgroundColor: driver.isOnline ? '#27ae60' : '#ccc' }
-                ]} />
-                <Text style={styles.statusText}>
-                  {driver.isOnline ? 'Онлайн' : 'Офлайн'}
-                </Text>
+
+              <View style={styles.driverStats}>
+                <View style={styles.statItem}>
+                  <RatingStars rating={driver.rating} size={16} />
+                  <Text style={styles.statText}>{driver.rating}</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Ionicons name="car" size={16} color="#6B7280" />
+                  <Text style={styles.statText}>{driver.totalRides} поездок</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Ionicons name="location" size={16} color="#6B7280" />
+                  <Text style={styles.statText}>{driver.distance}</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Ionicons name="time" size={16} color="#6B7280" />
+                  <Text style={styles.statText}>{driver.estimatedTime}</Text>
+                </View>
+              </View>
+
+              <View style={styles.driverFooter}>
+                <View style={styles.actionButtons}>
+                  {driver.isAvailable ? (
+                    <>
+                      <TouchableOpacity 
+                        style={styles.selectButton}
+                        onPress={() => handleDriverSelect(driver)}
+                      >
+                        <Text style={styles.selectButtonText}>Выбрать</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.bookButton}
+                        onPress={() => handleBookDriver(driver)}
+                      >
+                        <Text style={styles.bookButtonText}>Забронировать</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <TouchableOpacity style={styles.unavailableButton} disabled>
+                      <Text style={styles.unavailableButtonText}>Недоступен</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </View>
-
-            <View style={styles.carInfo}>
-              <MaterialIcons name="directions-car" size={20} color="#666" />
-              <Text style={styles.carText}>{driver.carModel}</Text>
-              <Text style={styles.carNumber}>{driver.carNumber}</Text>
-            </View>
-
-            <View style={styles.tripInfo}>
-              <View style={styles.tripDetail}>
-                <Ionicons name="location" size={16} color="#666" />
-                <Text style={styles.tripText}>{driver.distance}</Text>
-              </View>
-              <View style={styles.tripDetail}>
-                <Ionicons name="time" size={16} color="#666" />
-                <Text style={styles.tripText}>{driver.estimatedTime}</Text>
-              </View>
-              <View style={styles.tripDetail}>
-                <Ionicons name="wallet" size={16} color="#666" />
-                <Text style={styles.priceText}>{driver.price}</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity 
-              style={[
-                styles.orderButton,
-                !driver.isOnline && styles.orderButtonDisabled
-              ]}
-              onPress={() => handleDriverSelect(driver)}
-              disabled={!driver.isOnline}
-            >
-              <Text style={styles.orderButtonText}>
-                {driver.isOnline ? 'Заказать' : 'Недоступен'}
-              </Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
+          </AppCard>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -238,7 +275,6 @@ const DriversScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
@@ -246,100 +282,103 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
+    fontSize: 24,
+    fontWeight: '700',
   },
-  refreshButton: {
-    padding: 4,
+  filterButton: {
+    padding: 8,
   },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
+  searchBarWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 0,
   },
-  searchInput: {
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    height: 44,
     paddingHorizontal: 16,
-    height: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
   },
   searchIcon: {
     marginRight: 12,
   },
-  input: {
+  searchInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#222',
+    fontSize: 15,
+    color: '#1F2937',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
   },
   filtersContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    marginBottom: 0,
+    paddingBottom: 0,
+    marginTop: 8,
+    height: 32,
+    minHeight: 32,
   },
-  filterButton: {
+  filtersContent: {
+    paddingHorizontal: 16,
+  },
+  filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
-    marginRight: 12,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    height: 32,
+    paddingHorizontal: 12,
+    paddingVertical: 0,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  filterButtonActive: {
-    backgroundColor: '#27ae60',
+  filterChipActive: {
+    backgroundColor: '#1E3A8A',
+    borderColor: '#1E3A8A',
   },
   filterText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 6,
-  },
-  filterTextActive: {
-    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: 4,
   },
   driversList: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: 8,
+    marginTop: 0,
+    paddingTop: 0,
+    marginBottom: 0,
+    paddingBottom: 0,
   },
   driverCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    marginBottom: 8,
+  },
+  driverContent: {
+    paddingVertical: 8,
   },
   driverHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   driverAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#27ae60',
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -350,29 +389,18 @@ const styles = StyleSheet.create({
   driverName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#222',
-    marginBottom: 4,
+    color: '#1F2937',
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
+  carInfo: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#222',
-    marginLeft: 4,
+    color: '#6B7280',
+    marginTop: 2,
   },
-  ridesText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
-  },
-  statusContainer: {
+  driverStatus: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statusIndicator: {
+  statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
@@ -380,60 +408,63 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    color: '#666',
+    color: '#6B7280',
   },
-  carInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-  },
-  carText: {
-    fontSize: 14,
-    color: '#222',
-    marginLeft: 8,
-    flex: 1,
-  },
-  carNumber: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#27ae60',
-  },
-  tripInfo: {
+  driverStats: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  tripDetail: {
+  statItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  tripText: {
-    fontSize: 14,
-    color: '#666',
+  statText: {
+    fontSize: 12,
+    color: '#6B7280',
     marginLeft: 4,
   },
-  priceText: {
+  driverFooter: {
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'flex-end',
+  },
+  selectButton: {
+    backgroundColor: '#1E3A8A',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  selectButtonText: {
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
-    color: '#27ae60',
-    marginLeft: 4,
   },
-  orderButton: {
-    backgroundColor: '#27ae60',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
+  bookButton: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  orderButtonDisabled: {
-    backgroundColor: '#ccc',
+  bookButtonText: {
+    color: '#1E3A8A',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  orderButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  unavailableButton: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  unavailableButtonText: {
+    color: '#6B7280',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

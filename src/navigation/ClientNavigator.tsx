@@ -5,7 +5,7 @@ import TabBar from './TabBar';
 import MapScreen from '../screens/client/MapScreen';
 import DriversScreen from '../screens/client/DriversScreen';
 import PlusScreen from '../screens/client/PlusScreen';
-import ChatScreen from '../screens/client/ChatScreen';
+import ChatNavigator from './ChatNavigator';
 import ClientProfileScreen from '../screens/profile/ClientProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -49,7 +49,7 @@ const ClientNavigator: React.FC = () => {
       />
       <Tab.Screen 
         name="Chat" 
-        component={ChatScreen}
+        component={ChatNavigator}
         options={{
           tabBarLabel: 'Чат',
           tabBarIcon: '💬',

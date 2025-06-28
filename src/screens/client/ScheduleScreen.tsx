@@ -7,95 +7,81 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
-  TextInput
+  StatusBar
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AppCard from '../../components/AppCard';
 
-interface ScheduledRide {
+interface ScheduleItem {
   id: string;
   date: string;
   time: string;
-  pickup: string;
-  destination: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-  driverName?: string;
-  price?: string;
+  driver: string;
+  car: string;
+  from: string;
+  to: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
 }
 
 const ScheduleScreen: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showNewRideForm, setShowNewRideForm] = useState(false);
-  const [newRideData, setNewRideData] = useState({
-    pickup: '',
-    destination: '',
-    date: '',
-    time: ''
-  });
+  const { isDark } = useTheme();
+  const [selectedDate, setSelectedDate] = useState('2024-01-15');
+  const [selectedTime, setSelectedTime] = useState('09:00');
 
-  const scheduledRides: ScheduledRide[] = [
+  const scheduleItems: ScheduleItem[] = [
     {
       id: '1',
       date: '2024-01-15',
-      time: '08:30',
-      pickup: 'ул. Ленина, 15',
-      destination: 'Офис на ул. Пушкина, 8',
-      status: 'scheduled',
-      driverName: 'Александр Петров',
-      price: '450 ₽'
+      time: '09:00',
+      driver: 'Александр Петров',
+      car: 'Toyota Camry • А123БВ777',
+      from: 'ул. Ленина, 10',
+      to: 'ул. Гагарина, 25',
+      status: 'upcoming',
     },
     {
       id: '2',
       date: '2024-01-16',
-      time: '17:00',
-      pickup: 'ТЦ "Молл"',
-      destination: 'Дом на ул. Гагарина, 12',
-      status: 'scheduled',
-      driverName: 'Иван Сидоров',
-      price: '320 ₽'
+      time: '14:30',
+      driver: 'Михаил Иванов',
+      car: 'Honda Accord • В456ГД888',
+      from: 'Дом',
+      to: 'Работа',
+      status: 'upcoming',
     },
     {
       id: '3',
       date: '2024-01-14',
-      time: '09:15',
-      pickup: 'Аэропорт',
-      destination: 'Отель "Престиж"',
+      time: '08:00',
+      driver: 'Дмитрий Сидоров',
+      car: 'BMW 3 Series • Е789ЖЗ999',
+      from: 'ул. Пушкина, 15',
+      to: 'Аэропорт',
       status: 'completed',
-      driverName: 'Петр Козлов',
-      price: '850 ₽'
-    }
+    },
   ];
 
-  const quickDestinations = [
-    { name: 'Дом', icon: 'home', color: '#27ae60' },
-    { name: 'Работа', icon: 'briefcase', color: '#007AFF' },
-    { name: 'Школа', icon: 'school', color: '#FF9500' },
-    { name: 'Аэропорт', icon: 'airplane', color: '#8e44ad' },
+  const timeSlots = [
+    '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', 
+    '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'
   ];
 
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-  };
-
-  const handleQuickDestination = (destination: string) => {
-    setNewRideData(prev => ({ ...prev, destination }));
-    Alert.alert('Направление', `Выбрано: ${destination}`);
-  };
-
-  const handleScheduleRide = () => {
-    if (!newRideData.pickup || !newRideData.destination || !newRideData.date || !newRideData.time) {
-      Alert.alert('Ошибка', 'Пожалуйста, заполните все поля');
-      return;
-    }
-    
-    Alert.alert('Поездка запланирована', 'Ваша поездка успешно запланирована!');
-    setShowNewRideForm(false);
-    setNewRideData({ pickup: '', destination: '', date: '', time: '' });
-  };
-
-  const handleCancelRide = (ride: ScheduledRide) => {
+  const handleBookSchedule = () => {
     Alert.alert(
-      'Отменить поездку',
-      `Отменить запланированную поездку на ${ride.date} в ${ride.time}?`,
+      'Бронирование',
+      `Забронировать водителя на ${selectedDate} в ${selectedTime}?`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        { text: 'Забронировать', onPress: () => Alert.alert('Успешно', 'Поездка забронирована!') }
+      ]
+    );
+  };
+
+  const handleCancelSchedule = (item: ScheduleItem) => {
+    Alert.alert(
+      'Отмена поездки',
+      `Отменить поездку с ${item.driver}?`,
       [
         { text: 'Нет', style: 'cancel' },
         { text: 'Отменить', style: 'destructive', onPress: () => Alert.alert('Отменено', 'Поездка отменена') }
@@ -103,27 +89,18 @@ const ScheduleScreen: React.FC = () => {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short' 
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled': return '#007AFF';
-      case 'completed': return '#27ae60';
-      case 'cancelled': return '#FF3B30';
-      default: return '#666';
+      case 'upcoming': return '#1E3A8A';
+      case 'completed': return '#10B981';
+      case 'cancelled': return '#EF4444';
+      default: return '#6B7280';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'scheduled': return 'Запланирована';
+      case 'upcoming': return 'Предстоит';
       case 'completed': return 'Завершена';
       case 'cancelled': return 'Отменена';
       default: return 'Неизвестно';
@@ -131,172 +108,125 @@ const ScheduleScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Планирование</Text>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => setShowNewRideForm(true)}
-        >
-          <Ionicons name="add" size={24} color="#27ae60" />
+        <Text style={[styles.headerTitle, { color: isDark ? '#F9FAFB' : '#1F2937' }]}>
+          Расписание поездок
+        </Text>
+        <TouchableOpacity style={styles.addButton}>
+          <Ionicons name="add" size={24} color="#1E3A8A" />
         </TouchableOpacity>
       </View>
 
-      {/* Quick Destinations */}
-      <View style={styles.quickSection}>
-        <Text style={styles.sectionTitle}>Быстрые направления</Text>
-        <View style={styles.quickGrid}>
-          {quickDestinations.map((dest, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.quickCard}
-              onPress={() => handleQuickDestination(dest.name)}
-            >
-              <View style={[styles.quickIcon, { backgroundColor: dest.color }]}>
-                <Ionicons name={dest.icon as any} size={20} color="#fff" />
-              </View>
-              <Text style={styles.quickText}>{dest.name}</Text>
-            </TouchableOpacity>
-          ))}
+      {/* Quick Booking */}
+      <AppCard style={styles.bookingCard} margin={16}>
+        <Text style={styles.sectionTitle}>Быстрое бронирование</Text>
+        
+        <View style={styles.bookingForm}>
+          <View style={styles.formRow}>
+            <View style={styles.formField}>
+              <Text style={styles.fieldLabel}>Дата</Text>
+              <TouchableOpacity style={styles.datePicker}>
+                <Ionicons name="calendar" size={20} color="#1E3A8A" />
+                <Text style={styles.dateText}>{selectedDate}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.formField}>
+              <Text style={styles.fieldLabel}>Время</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.timeSlots}>
+                  {timeSlots.map((time) => (
+                    <TouchableOpacity
+                      key={time}
+                      style={[
+                        styles.timeSlot,
+                        selectedTime === time && styles.timeSlotSelected
+                      ]}
+                      onPress={() => setSelectedTime(time)}
+                    >
+                      <Text style={[
+                        styles.timeSlotText,
+                        selectedTime === time && styles.timeSlotTextSelected
+                      ]}>
+                        {time}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+          
+          <TouchableOpacity style={styles.bookButton} onPress={handleBookSchedule}>
+            <Ionicons name="car-sport" size={20} color="#FFFFFF" />
+            <Text style={styles.bookButtonText}>Забронировать водителя</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      </AppCard>
 
-      {/* Scheduled Rides */}
-      <View style={styles.ridesSection}>
-        <Text style={styles.sectionTitle}>Запланированные поездки</Text>
-        <ScrollView style={styles.ridesList} showsVerticalScrollIndicator={false}>
-          {scheduledRides.map((ride) => (
-            <View key={ride.id} style={styles.rideCard}>
-              <View style={styles.rideHeader}>
-                <View style={styles.rideInfo}>
-                  <Text style={styles.rideDate}>{formatDate(ride.date)}</Text>
-                  <Text style={styles.rideTime}>{ride.time}</Text>
-                </View>
-                <View style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(ride.status) }
-                ]}>
-                  <Text style={styles.statusText}>{getStatusText(ride.status)}</Text>
-                </View>
+      {/* Schedule List */}
+      <AppCard style={styles.scheduleCard} margin={16}>
+        <Text style={styles.sectionTitle}>Мои поездки</Text>
+        
+        {scheduleItems.map((item) => (
+          <View key={item.id} style={styles.scheduleItem}>
+            <View style={styles.scheduleHeader}>
+              <View style={styles.scheduleInfo}>
+                <Text style={styles.scheduleDate}>{item.date}</Text>
+                <Text style={styles.scheduleTime}>{item.time}</Text>
               </View>
-
-              <View style={styles.routeInfo}>
-                <View style={styles.routePoint}>
-                  <View style={styles.routeIcon}>
-                    <Ionicons name="location" size={16} color="#27ae60" />
-                  </View>
-                  <View style={styles.routeText}>
-                    <Text style={styles.routeLabel}>Откуда</Text>
-                    <Text style={styles.routeAddress}>{ride.pickup}</Text>
-                  </View>
-                </View>
-                <View style={styles.routePoint}>
-                  <View style={styles.routeIcon}>
-                    <Ionicons name="navigate" size={16} color="#007AFF" />
-                  </View>
-                  <View style={styles.routeText}>
-                    <Text style={styles.routeLabel}>Куда</Text>
-                    <Text style={styles.routeAddress}>{ride.destination}</Text>
-                  </View>
-                </View>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(item.status) }
+              ]}>
+                <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
               </View>
-
-              {ride.driverName && (
-                <View style={styles.driverInfo}>
-                  <View style={styles.driverAvatar}>
-                    <Ionicons name="person" size={16} color="#fff" />
-                  </View>
-                  <Text style={styles.driverName}>{ride.driverName}</Text>
-                  {ride.price && <Text style={styles.ridePrice}>{ride.price}</Text>}
+            </View>
+            
+            <View style={styles.routeInfo}>
+              <View style={styles.routePoint}>
+                <View style={[styles.point, { backgroundColor: '#10B981' }]}>
+                  <Text style={styles.pointText}>A</Text>
                 </View>
-              )}
-
-              {ride.status === 'scheduled' && (
+                <Text style={styles.routeText}>{item.from}</Text>
+              </View>
+              
+              <View style={styles.routeLine} />
+              
+              <View style={styles.routePoint}>
+                <View style={[styles.point, { backgroundColor: '#EF4444' }]}>
+                  <Text style={styles.pointText}>B</Text>
+                </View>
+                <Text style={styles.routeText}>{item.to}</Text>
+              </View>
+            </View>
+            
+            <View style={styles.driverInfo}>
+              <View style={styles.driverAvatar}>
+                <Ionicons name="person" size={20} color="#1E3A8A" />
+              </View>
+              <View style={styles.driverDetails}>
+                <Text style={styles.driverName}>{item.driver}</Text>
+                <Text style={styles.carInfo}>{item.car}</Text>
+              </View>
+              
+              {item.status === 'upcoming' && (
                 <TouchableOpacity 
                   style={styles.cancelButton}
-                  onPress={() => handleCancelRide(ride)}
+                  onPress={() => handleCancelSchedule(item)}
                 >
-                  <Ionicons name="close-circle" size={20} color="#FF3B30" />
+                  <Ionicons name="close" size={16} color="#EF4444" />
                   <Text style={styles.cancelButtonText}>Отменить</Text>
                 </TouchableOpacity>
               )}
             </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* New Ride Form Modal */}
-      {showNewRideForm && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Запланировать поездку</Text>
-              <TouchableOpacity 
-                style={styles.closeButton}
-                onPress={() => setShowNewRideForm(false)}
-              >
-                <Ionicons name="close" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.formContainer}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Откуда</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Введите адрес отправления"
-                  value={newRideData.pickup}
-                  onChangeText={(text) => setNewRideData(prev => ({ ...prev, pickup: text }))}
-                  placeholderTextColor="#999"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Куда</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Введите адрес назначения"
-                  value={newRideData.destination}
-                  onChangeText={(text) => setNewRideData(prev => ({ ...prev, destination: text }))}
-                  placeholderTextColor="#999"
-                />
-              </View>
-
-              <View style={styles.inputRow}>
-                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.inputLabel}>Дата</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="ДД.ММ.ГГГГ"
-                    value={newRideData.date}
-                    onChangeText={(text) => setNewRideData(prev => ({ ...prev, date: text }))}
-                    placeholderTextColor="#999"
-                  />
-                </View>
-                <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={styles.inputLabel}>Время</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="ЧЧ:ММ"
-                    value={newRideData.time}
-                    onChangeText={(text) => setNewRideData(prev => ({ ...prev, time: text }))}
-                    placeholderTextColor="#999"
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity 
-                style={styles.scheduleButton}
-                onPress={handleScheduleRide}
-              >
-                <Ionicons name="calendar" size={20} color="#fff" />
-                <Text style={styles.scheduleButtonText}>Запланировать</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        </View>
-      )}
+        ))}
+      </AppCard>
     </SafeAreaView>
   );
 };
@@ -304,7 +234,6 @@ const ScheduleScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
@@ -312,248 +241,192 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
+    fontSize: 24,
+    fontWeight: '700',
   },
   addButton: {
-    padding: 4,
+    padding: 8,
   },
-  quickSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
+  bookingCard: {
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#222',
+    color: '#1F2937',
     marginBottom: 16,
   },
-  quickGrid: {
+  bookingForm: {
+    gap: 16,
+  },
+  formRow: {
+    gap: 16,
+  },
+  formField: {
+    gap: 8,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  datePicker: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  quickCard: {
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    flex: 1,
-    marginHorizontal: 4,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
-  quickIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  dateText: {
+    fontSize: 16,
+    color: '#1F2937',
+    marginLeft: 8,
+  },
+  timeSlots: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  timeSlot: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  timeSlotSelected: {
+    backgroundColor: '#1E3A8A',
+    borderColor: '#1E3A8A',
+  },
+  timeSlotText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  timeSlotTextSelected: {
+    color: '#FFFFFF',
+  },
+  bookButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#1E3A8A',
+    borderRadius: 12,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  scheduleCard: {
     marginBottom: 8,
   },
-  quickText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#222',
-  },
-  ridesSection: {
-    flex: 1,
-    paddingHorizontal: 20,
+  scheduleItem: {
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    marginTop: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
-  ridesList: {
-    flex: 1,
-  },
-  rideCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  rideHeader: {
+  scheduleHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  rideInfo: {
-    flex: 1,
+  scheduleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  rideDate: {
+  scheduleDate: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#222',
+    color: '#1F2937',
   },
-  rideTime: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
+  scheduleTime: {
+    fontSize: 16,
+    color: '#6B7280',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   statusText: {
-    color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   routeInfo: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   routePoint: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginVertical: 4,
   },
-  routeIcon: {
+  point: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-    marginTop: 2,
+    marginRight: 8,
+  },
+  pointText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   routeText: {
-    flex: 1,
-  },
-  routeLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
-  },
-  routeAddress: {
     fontSize: 14,
-    color: '#222',
-    lineHeight: 18,
+    color: '#6B7280',
+  },
+  routeLine: {
+    width: 2,
+    height: 16,
+    backgroundColor: '#1E3A8A',
+    marginLeft: 11,
+    marginVertical: 2,
   },
   driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    borderRadius: 8,
   },
   driverAvatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 8,
+  },
+  driverDetails: {
+    flex: 1,
   },
   driverName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#222',
-    flex: 1,
+    color: '#1F2937',
   },
-  ridePrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#27ae60',
+  carInfo: {
+    fontSize: 12,
+    color: '#6B7280',
   },
   cancelButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
+    gap: 4,
   },
   cancelButtonText: {
-    color: '#FF3B30',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    margin: 20,
-    width: '90%',
-    maxWidth: 400,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  formContainer: {
-    gap: 16,
-  },
-  inputGroup: {
-    gap: 8,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#222',
-  },
-  input: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#222',
-  },
-  inputRow: {
-    flexDirection: 'row',
-  },
-  scheduleButton: {
-    backgroundColor: '#27ae60',
-    borderRadius: 12,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  scheduleButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 12,
+    color: '#EF4444',
+    fontWeight: '500',
   },
 });
 
